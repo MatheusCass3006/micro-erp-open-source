@@ -1,5 +1,5 @@
 // ============================================================
-// CONTEXT: Autenticação — MicroERP (SEM LOGIN)
+// CONTEXT: Autenticação — MicroERP
 // ============================================================
 
 "use client";
@@ -9,25 +9,21 @@ import {
   useState, useCallback, ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { authService } from "@/services/auth.service";
 import { Usuario } from "@/types/auth";
-
-// ── Usuário fixo (modo sem login) ───────────────────────────────
-const USUARIO_FIXO: Usuario = {
-  id: 1,
-  nome: "Usuario Master",
-  email: "master@microerp.com",
-  role: "admin",
-  empresa: { id: 1, nome: "Minha Empresa", slug: "minha-empresa" },
-};
+import { configureApi } from "@/services/api";
 
 // ── Contrato do contexto ──────────────────────────────────────
 interface AuthContextValue {
-  usuario: Usuario;
+  usuario: Usuario | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  accessToken: string;
-  login: () => Promise<void>;
+  accessToken: string | null;
+  login: (email: string, senha: string) => Promise<void>;
   logout: () => void;
+  checkAuth: () => Promise<void>;
+  setAccessToken: (token: string | null) => void;
+  loginWithToken: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -36,38 +32,110 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
-  const [usuario, setUsuario] = useState<Usuario>(USUARIO_FIXO);
-  const [isLoading, setIsLoading] = useState(false);
-  const [accessToken] = useState("mock-token-sem-login");
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // Começa true para o check inicial
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
 
-  // ── Login automático (sem precisar digitar nada) ─────────────
-  const login = useCallback(async () => {
+  // Expõe o setter do token para a camada de API e outros componentes
+  const setAccessToken = useCallback((token: string | null) => {
+    setAccessTokenState(token);
+  }, []);
+
+  // ── Sincronização inicial (Refresh) ──────────────────────────
+  const checkAuth = useCallback(async () => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 500)); // Simula login
-    setUsuario(USUARIO_FIXO);
-    setIsLoading(false);
-    router.push("/dashboard");
-  }, [router]);
+    try {
+      const { accessToken: newToken, usuario: user } = await authService.refresh();
+      setAccessToken(newToken);
+      setUsuario(user);
+    } catch {
+      setAccessToken(null);
+      setUsuario(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setAccessToken]);
 
-  // ── Logout apenas redireciona para home ───────────────
-  const logout = useCallback(() => {
-    router.push("/");
-  }, [router]);
+  // ── Login convencional ──────────────────────────────────────
+  const login = useCallback(async (email: string, senha: string) => {
+    setIsLoading(true);
+    try {
+      const data = await authService.login(email, senha);
+      setAccessToken(data.accessToken);
+      setUsuario({
+        id: data.usuario.id,
+        nome: data.usuario.nome,
+        email: data.usuario.email,
+        role: data.role,
+        empresa: data.empresa
+      });
+      router.push("/dashboard");
+    } catch (err) {
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router, setAccessToken]);
 
-  // Login automático ao iniciar
+  // ── Login com token externo (Google/Invite) ──────────────────
+  const loginWithToken = useCallback(async (token: string) => {
+    setIsLoading(true);
+    try {
+      setAccessToken(token);
+      const user = await authService.me(token);
+      if (user) {
+        setUsuario({
+          id: user.id,
+          nome: user.nome,
+          email: user.email,
+          role: user.role,
+          empresa: user.empresa
+        });
+      }
+    } catch (err) {
+      setAccessToken(null);
+      setUsuario(null);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setAccessToken]);
+
+  // ── Logout ───────────────────────────────────────────────────
+  const logout = useCallback(async () => {
+    await authService.logout();
+    setAccessToken(null);
+    setUsuario(null);
+    router.push("/login");
+  }, [router, setAccessToken]);
+
+  // ── Inicialização ────────────────────────────────────────────
   useEffect(() => {
-    login();
-  }, [login]);
+    // Configura a camada de API para usar o estado deste contexto
+    configureApi(
+      () => accessToken,
+      setAccessToken,
+      () => { setUsuario(null); router.push("/login"); }
+    );
+  }, [accessToken, setAccessToken, router]);
+
+  // Tenta restaurar sessão ao carregar a página
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   return (
     <AuthContext.Provider
       value={{
         usuario,
         isLoading,
-        isAuthenticated: true,
+        isAuthenticated: !!usuario,
         accessToken,
         login,
         logout,
+        checkAuth,
+        setAccessToken,
+        loginWithToken
       }}
     >
       {children}
