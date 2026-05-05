@@ -1,0 +1,53 @@
+=== CURL HTTP LOCAL ===
+http_local:307
+=== CURL FRONTEND DIRETO ===
+next_local:307
+=== CURL BACKEND ===
+backend:404
+=== NGINX CONFIG SITES ===
+server {
+    listen 80;
+    server_name micro-erp-production.digital www.micro-erp-production.digital;
+
+    location /api/ {
+        proxy_pass http://localhost:3001/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+=== PM2 LOGS FRONTEND ===
+1|microerp | 2026-04-26 20:09:05: Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+1|microerp | 2026-04-26 20:09:05:     at ignore-listed frames
+1|microerp | 2026-04-26 20:38:26: Error [InvariantError]: Invariant: The client reference manifest for route "/dashboard" does not exist. This is a bug in Next.js.
+1|microerp | 2026-04-26 20:38:26:     at ignore-listed frames
+1|microerp | 2026-04-26 20:38:26: ⨯ Error [InvariantError]: Invariant: The client reference manifest for route "/dashboard" does not exist. This is a bug in Next.js.
+1|microerp | 2026-04-26 20:38:26:     at ignore-listed frames
+1|microerp | 2026-04-26 20:38:26: ⨯ Error [InvariantError]: Invariant: The client reference manifest for route "/dashboard" does not exist. This is a bug in Next.js.
+1|microerp | 2026-04-26 20:38:26:     at ignore-listed frames
+1|microerp | 2026-04-26 20:38:26: ⨯ Error: Failed to load static file for page: /500 ENOENT: no such file or directory, open '/home/ubuntu/microerp/frontend/.next/server/pages/500.html'
+1|microerp | 2026-04-26 20:38:26:     at ignore-listed frames
+
+/home/ubuntu/logs/frontend-out-1.log last 20 lines:
+1|microerp | 2026-04-25 15:46:53: ▲ Next.js 16.2.4
+1|microerp | 2026-04-25 15:46:53: - Local:         http://localhost:3000
+1|microerp | 2026-04-25 15:46:53: - Network:       http://172.31.7.157:3000
+1|microerp | 2026-04-25 15:46:53: ✓ Ready in 291ms
+1|microerp | 2026-04-26 20:15:32: ▲ Next.js 16.2.4
+1|microerp | 2026-04-26 20:15:32: - Local:         http://localhost:3000
+1|microerp | 2026-04-26 20:15:32: - Network:       http://172.31.7.157:3000
+1|microerp | 2026-04-26 20:15:32: ✓ Ready in 246ms
+1|microerp | 2026-04-26 20:38:46: ▲ Next.js 16.2.4
+1|microerp | 2026-04-26 20:38:46: - Local:         http://localhost:3000
+1|microerp | 2026-04-26 20:38:46: - Network:       http://172.31.7.157:3000
+1|microerp | 2026-04-26 20:38:46: ✓ Ready in 245ms
+

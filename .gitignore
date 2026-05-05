@@ -1,0 +1,45 @@
+﻿# Node & Next
+**/node_modules/
+.next/
+.next_old_kept/
+out/
+dist/
+build/
+
+# DB & Local Files
+*.db
+*.db-journal
+financeiro
+.env*
+**/.env*
+
+# Logs & Scripts
+*.log
+logs/
+sistema.log
+*_output.txt
+deploy_and_fix_txt/
+"deploy and fixs txt/"
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Binarios e Cache Pesado
+financeiro-desktop/release/
+financeiro-desktop/dist/
+installer_output/
+*.exe
+*.zip
+*.asar
+*.AppImage
+*.dmg
+*.snap
+*.sst
+.turbo/
+.cache/
+
+# Outros segredos
+.openclaude-profile.json

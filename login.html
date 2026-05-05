@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MicroERP — Login</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="/static/icon-192.ico">
+  <link rel="apple-touch-icon" href="/static/icon-192.ico">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/static/icon-192.ico">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Aplicar tema salvo antes de renderizar */
+    :root { --card-bg: rgba(255,255,255,0.97); --card-text: #1a1a2e; --input-bg: #f8fafc; --input-border: #e8ecf0; --label-color: #444; }
+    [data-theme="dark"] { --card-bg: rgba(22,27,34,0.97); --card-text: #e6edf3; --input-bg: #0d1117; --input-border: #30363d; --label-color: #8b949e; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      color: var(--card-text);
+      border-radius: 20px;
+      padding: 48px 40px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+      transition: all .3s ease;
+    }
+    label { color: var(--label-color) !important; }
+    input { background: var(--input-bg) !important; border-color: var(--input-border) !important; color: var(--card-text) !important; }
+    input::placeholder { color: #888 !important; }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, #1e6b2e, #27ae60);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 16px;
+      box-shadow: 0 8px 20px rgba(30,107,46,0.35);
+    }
+
+    .logo h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    .logo p {
+      font-size: 13px;
+      color: #666;
+    }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+      gap: 4px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: #888;
+      transition: all .2s;
+    }
+    .auth-tab.ativo {
+      background: white;
+      color: #1e6b2e;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    /* Modo Escuro — tela de login */
+    [data-theme="dark"] .login-card    { background: rgba(22,27,34,0.97) !important; color: #e6edf3; }
+    [data-theme="dark"] .auth-tabs     { background: #0d1117; }
+    [data-theme="dark"] .auth-tab      { color: #8b949e; }
+    [data-theme="dark"] .auth-tab.ativo{ background: #161b22; color: #58a6ff; box-shadow: none; }
+    [data-theme="dark"] label          { color: #8b949e !important; }
+    [data-theme="dark"] input          { background: #0d1117 !important; border-color: #30363d !important; color: #e6edf3 !important; }
+    [data-theme="dark"] input:focus    { background: #0d1117 !important; border-color: #58a6ff !important; box-shadow: 0 0 0 4px rgba(88,166,255,.15) !important; }
+    [data-theme="dark"] input::placeholder { color: #484f58 !important; }
+    [data-theme="dark"] .logo h1       { color: #e6edf3; }
+    [data-theme="dark"] .logo p        { color: #8b949e; }
+    [data-theme="dark"] .footer-login  { color: #484f58; }
+    [data-theme="dark"] .erro          { background: #2d1b1b; border-color: #842029; color: #f8d7da; }
+    [data-theme="dark"] .sucesso       { background: #1a2f1a; border-color: #0f5132; color: #d1e7dd; }
+    [data-theme="dark"] .senha-forca   { background: #30363d; }
+    [data-theme="dark"] #btn-google    { background: #161b22 !important; border-color: #30363d !important; color: #e6edf3 !important; }
+    [data-theme="dark"] #btn-google:hover { background: #1c2128 !important; }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e8ecf0;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #1a1a2e;
+      background: #f8fafc;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #27ae60;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(39,174,96,0.12);
+    }
+
+    .input-icon {
+      position: relative;
+    }
+    .input-icon span {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      pointer-events: none;
+    }
+    .input-icon input {
+      padding-left: 44px;
+    }
+
+    .toggle-senha {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 18px;
+      user-select: none;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #1e6b2e, #27ae60);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      margin-top: 8px;
+      box-shadow: 0 6px 20px rgba(39,174,96,0.35);
+    }
+
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 28px rgba(39,174,96,0.4);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .btn-login:disabled {
+      opacity: .7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .erro {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #dc2626;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 14px;
+      display: none;
+    }
+
+    .sucesso {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #16a34a;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 14px;
+      display: none;
+    }
+
+    .footer-login {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .loading-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: white;
+      animation: bounce 1.2s infinite;
+      margin: 0 2px;
+    }
+    .loading-dot:nth-child(2) { animation-delay: .2s; }
+    .loading-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); }
+      40% { transform: translateY(-6px); }
+    }
+
+    .senha-forca {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 6px;
+      background: #e8ecf0;
+      overflow: hidden;
+    }
+    .senha-forca-bar {
+      height: 100%;
+      border-radius: 2px;
+      transition: width .3s, background .3s;
+      width: 0%;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+      .login-card { padding: 36px 24px 32px; }
+      .logo-icon { width: 60px; height: 60px; font-size: 28px; }
+      .logo h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  // Aplicar tema salvo imediatamente (evita flash branco→escuro)
+  (function() {
+    const t = localStorage.getItem('microerp_tema') || 'light';
+    if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  })();
+</script>
+
+<div class="login-card">
+  <div class="logo">
+    <div class="logo-icon">💰</div>
+    <h1 id="nome-empresa-login">MicroERP</h1>
+    <p id="subtitulo-login">Acesse sua conta para continuar</p>
+  </div>
+
+  <!-- Tabs Login / Cadastro -->
+  <div class="auth-tabs" id="auth-tabs">
+    <button class="auth-tab ativo" id="tab-login" onclick="mostrarAba('login')">Entrar</button>
+    <button class="auth-tab" id="tab-cadastro" onclick="mostrarAba('cadastro')">Criar conta</button>
+  </div>
+
+  <!-- ── FORMULÁRIO DE LOGIN ─────────────────────────── -->
+  <div id="form-login-wrap">
+    <form onsubmit="fazerLogin(event)" autocomplete="on">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <div class="input-icon">
+          <span>✉️</span>
+          <input type="email" id="email" name="email" placeholder="seu@email.com"
+                 autocomplete="username email" required autofocus>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <div class="input-icon" style="position:relative">
+          <span>🔒</span>
+          <input type="password" id="senha" name="senha" placeholder="Sua senha"
+                 autocomplete="current-password" required>
+          <span class="toggle-senha" onclick="toggleSenha('senha','icon-olho')" id="icon-olho">👁️</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" id="btn-entrar">
+        Entrar
+      </button>
+    </form>
+
+    <!-- Divisor -->
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0">
+      <hr style="flex:1;border:none;border-top:1px solid #e8ecf0">
+      <span style="font-size:12px;color:#aaa">ou</span>
+      <hr style="flex:1;border:none;border-top:1px solid #e8ecf0">
+    </div>
+
+    <!-- Botão Google -->
+    <button onclick="loginGoogle()" id="btn-google"
+            style="width:100%;padding:12px;border:2px solid #e8ecf0;border-radius:12px;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:600;color:#444;transition:all .2s">
+      <svg width="18" height="18" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Entrar com Google
+    </button>
+
+    <div class="erro" id="erro-login"></div>
+
+    <!-- Link esqueceu senha -->
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="mostrarAba('recuperar')"
+              style="border:none;background:none;color:#1e6b2e;font-size:13px;cursor:pointer;text-decoration:underline">
+        Esqueceu a senha?
+      </button>
+    </div>
+
+    <div class="footer-login">
+      MicroERP v2.0<br>
+      Desenvolvido por Marcos Matheus Cassalho
+    </div>
+  </div>
+
+  <!-- ── FORMULÁRIO DE CADASTRO ─────────────────────── -->
+  <div id="form-cadastro-wrap" style="display:none">
+    <form onsubmit="fazerCadastro(event)" autocomplete="off">
+
+      <div class="form-group">
+        <label for="cad-empresa">Nome da Empresa</label>
+        <div class="input-icon">
+          <span>🏢</span>
+          <input type="text" id="cad-empresa" placeholder="Nome da empresa ou (code)" required>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:4px">
+          Cada empresa tem seus dados separados dos demais
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-nome">Seu nome completo</label>
+        <div class="input-icon">
+          <span>👤</span>
+          <input type="text" id="cad-nome" placeholder="Seu nome" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-email">Email</label>
+        <div class="input-icon">
+          <span>✉️</span>
+          <input type="email" id="cad-email" placeholder="seu@email.com" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-senha">Senha</label>
+        <div class="input-icon" style="position:relative">
+          <span>🔒</span>
+          <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres"
+                 oninput="verificarForca(this.value)" required>
+          <span class="toggle-senha" onclick="toggleSenha('cad-senha','icon-olho-cad')" id="icon-olho-cad">👁️</span>
+        </div>
+        <div class="senha-forca">
+          <div class="senha-forca-bar" id="forca-bar"></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="cad-confirmar">Confirmar senha</label>
+        <div class="input-icon" style="position:relative">
+          <span>🔒</span>
+          <input type="password" id="cad-confirmar" placeholder="Repita a senha" required>
+          <span class="toggle-senha" onclick="toggleSenha('cad-confirmar','icon-olho-cad2')" id="icon-olho-cad2">👁️</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" id="btn-cadastrar">
+        Criar conta e entrar
+      </button>
+    </form>
+
+    <div class="erro" id="erro-cadastro"></div>
+    <div class="sucesso" id="sucesso-cadastro"></div>
+
+    <div class="footer-login">
+      MicroERP v1.0
+    </div>
+  </div>
+
+  <!-- ── VERIFICAÇÃO DE E-MAIL ──────────────────────── -->
+  <div id="form-verificar-wrap" style="display:none">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:48px">📬</div>
+      <h3 style="color:#1a1a2e;margin:8px 0 4px">Verifique seu e-mail</h3>
+      <p style="color:#666;font-size:13px">
+        Enviamos um código de 6 dígitos para<br>
+        <strong id="email-destino-verificacao"></strong>
+      </p>
+    </div>
+
+    <div class="form-group">
+      <label>Código de verificação</label>
+      <input type="text" id="codigo-verificacao"
+             placeholder="000000"
+             maxlength="6"
+             style="text-align:center;font-size:28px;font-weight:700;letter-spacing:8px"
+             oninput="this.value=this.value.replace(/\D/g,'')">
+    </div>
+
+    <button class="btn-login" id="btn-verificar" onclick="verificarCodigo()">
+      ✅ Confirmar Código
+    </button>
+
+    <div class="erro" id="erro-verificacao"></div>
+
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:#888">
+      Não recebeu?
+      <button onclick="reenviarCodigo()"
+              style="border:none;background:none;color:#1e6b2e;cursor:pointer;font-size:13px;text-decoration:underline">
+        Reenviar código
+      </button>
+    </div>
+
+    <div class="footer-login" style="margin-top:16px">
+      MicroERP v1.0
+    </div>
+  </div>
+
+  <!-- ── RECUPERAR SENHA ────────────────────────────── -->
+  <div id="form-recuperar-wrap" style="display:none">
+    <div style="margin-bottom:16px">
+      <h3 style="color:#1a1a2e;margin:0 0 4px">Recuperar senha</h3>
+      <p style="color:#666;font-size:13px;margin:0">Informe seu e-mail para receber um código</p>
+    </div>
+
+    <div id="recuperar-step1">
+      <div class="form-group">
+        <label>E-mail cadastrado</label>
+        <div class="input-icon">
+          <span>✉️</span>
+          <input type="email" id="recuperar-email" placeholder="seu@email.com">
+        </div>
+      </div>
+      <button class="btn-login" id="btn-enviar-recuperacao" onclick="enviarRecuperacao()">
+        Enviar código
+      </button>
+    </div>
+
+    <div id="recuperar-step2" style="display:none">
+      <div class="form-group">
+        <label>Código recebido</label>
+        <input type="text" id="recuperar-codigo" placeholder="000000"
+               maxlength="6" style="text-align:center;font-size:24px;font-weight:700;letter-spacing:6px"
+               oninput="this.value=this.value.replace(/\D/g,'')">
+      </div>
+      <div class="form-group">
+        <label>Nova senha</label>
+        <input type="password" id="recuperar-nova-senha" placeholder="Mínimo 6 caracteres">
+      </div>
+      <button class="btn-login" id="btn-redefinir" onclick="redefinirSenha()">
+        Redefinir senha
+      </button>
+    </div>
+
+    <div class="erro" id="erro-recuperar"></div>
+    <div class="sucesso" id="sucesso-recuperar"></div>
+
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="mostrarAba('login')"
+              style="border:none;background:none;color:#666;font-size:13px;cursor:pointer">
+        ← Voltar ao login
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── MODO STANDALONE: não há backend, apenas demonstração ──
+  // Nome da empresa demo na tela de login
+  try { document.getElementById('nome-empresa-login').textContent = 'MicroERP Demo'; } catch(e) {}
+
+  // ── Mostrar dica de primeiro acesso após 3s ──────────────
+  setTimeout(() => {
+    const hint = document.getElementById('hint-padrao');
+    if (hint) hint.style.display = 'block';
+  }, 3000);
+
+  // ── Alternar abas (agora suporta: login, cadastro, verificar, recuperar) ───
+  function mostrarAba(aba) {
+    const abas = ['login','cadastro','verificar','recuperar'];
+    abas.forEach(a => {
+      const el = document.getElementById(`form-${a}-wrap`);
+      if (el) el.style.display = a === aba ? '' : 'none';
+    });
+
+    // Tabs visíveis só em login e cadastro
+    const tabs = document.getElementById('auth-tabs');
+    if (tabs) tabs.style.display = (aba === 'login' || aba === 'cadastro') ? '' : 'none';
+
+    if (aba === 'login') {
+      document.getElementById('tab-login').classList.add('ativo');
+      document.getElementById('tab-cadastro').classList.remove('ativo');
+      document.getElementById('subtitulo-login').textContent = 'Acesse sua conta para continuar';
+    } else if (aba === 'cadastro') {
+      document.getElementById('tab-login').classList.remove('ativo');
+      document.getElementById('tab-cadastro').classList.add('ativo');
+      document.getElementById('subtitulo-login').textContent = 'Crie sua conta para começar';
+    } else if (aba === 'verificar') {
+      document.getElementById('subtitulo-login').textContent = 'Confirme seu e-mail';
+    } else if (aba === 'recuperar') {
+      document.getElementById('subtitulo-login').textContent = 'Recuperar senha';
+    }
+
+    // Limpar mensagens de erro
+    document.querySelectorAll('.erro,.sucesso').forEach(el => el.style.display = 'none');
+  }
+
+  // ── Toggle mostrar/ocultar senha ────────────────────────
+  function toggleSenha(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      icon.textContent = '👁️';
+    }
+  }
+
+  // ── Indicador de força da senha ──────────────────────────
+  function verificarForca(senha) {
+    const bar = document.getElementById('forca-bar');
+    let forca = 0;
+    if (senha.length >= 6)  forca += 25;
+    if (senha.length >= 10) forca += 25;
+    if (/[A-Z]/.test(senha) && /[a-z]/.test(senha)) forca += 25;
+    if (/[0-9]/.test(senha) || /[^a-zA-Z0-9]/.test(senha)) forca += 25;
+    bar.style.width = forca + '%';
+    bar.style.background = forca <= 25 ? '#ef4444' : forca <= 50 ? '#f97316' : forca <= 75 ? '#eab308' : '#22c55e';
+  }
+
+  // ── MODO STANDALONE: login e cadastro simulados ──────────
+  function entrarNoSistema(nome) {
+    const usuario = { nome: nome || 'Usuário Demo', email: document.getElementById('email')?.value || 'demo@microerp.com', empresa: { nome: 'MicroERP Demo' } };
+    sessionStorage.setItem('sf_usuario', JSON.stringify(usuario));
+    window.location.href = 'index.html';
+  }
+
+  // ── Login (MOCK) ─────────────────────────────────────────
+  async function fazerLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const senha = document.getElementById('senha').value;
+    const btn   = document.getElementById('btn-entrar');
+    const erro  = document.getElementById('erro-login');
+
+    erro.style.display = 'none';
+
+    // Validação mínima
+    if (!email || !senha) {
+      erro.textContent = 'Preencha e-mail e senha para continuar.';
+      erro.style.display = 'block';
+      return;
+    }
+    if (senha.length < 3) {
+      erro.textContent = 'Senha muito curta. (modo demo: qualquer senha funciona)';
+      erro.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>`;
+
+    // Simula delay de autenticação
+    await new Promise(r => setTimeout(r, 900));
+
+    entrarNoSistema(email.split('@')[0]);
+  }
+
+  // ── Cadastro (MOCK) ──────────────────────────────────────
+  async function fazerCadastro(e) {
+    e.preventDefault();
+    const nome_empresa    = document.getElementById('cad-empresa').value.trim();
+    const nome_usuario    = document.getElementById('cad-nome').value.trim();
+    const senha           = document.getElementById('cad-senha').value;
+    const confirmar_senha = document.getElementById('cad-confirmar').value;
+    const btn             = document.getElementById('btn-cadastrar');
+    const erro            = document.getElementById('erro-cadastro');
+    const sucesso         = document.getElementById('sucesso-cadastro');
+
+    erro.style.display = 'none';
+    sucesso.style.display = 'none';
+
+    if (!nome_empresa) { erro.textContent = 'Informe o nome da empresa'; erro.style.display='block'; return; }
+    if (!nome_usuario) { erro.textContent = 'Preencha seu nome'; erro.style.display='block'; return; }
+    if (senha.length < 6) { erro.textContent = 'A senha deve ter pelo menos 6 caracteres'; erro.style.display='block'; return; }
+    if (senha !== confirmar_senha) { erro.textContent = 'As senhas não coincidem'; erro.style.display='block'; return; }
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>`;
+
+    await new Promise(r => setTimeout(r, 800));
+
+    sucesso.textContent = `✅ Conta criada! Bem-vindo, ${nome_usuario}! Entrando...`;
+    sucesso.style.display = 'block';
+    setTimeout(() => {
+      const u = { nome: nome_usuario, email: document.getElementById('cad-email').value, empresa: { nome: nome_empresa } };
+      sessionStorage.setItem('sf_usuario', JSON.stringify(u));
+      window.location.href = 'index.html';
+    }, 1200);
+  }
+
+  // ── Login com Google (MOCK) ──────────────────────────────
+  async function loginGoogle() {
+    const erro = document.getElementById('erro-login');
+    erro.textContent = '⚠️ Login com Google não disponível no modo demo standalone.';
+    erro.style.display = 'block';
+    setTimeout(() => { erro.style.display = 'none'; }, 3000);
+  }
+
+  // Capturar erro de OAuth no callback (ex: ?erro=google_cancelado)
+  const _urlParams = new URLSearchParams(window.location.search);
+  const _oauthErro = _urlParams.get('erro');
+  if (_oauthErro) {
+    const erros = {
+      google_cancelado:      'Login com Google cancelado.',
+      google_nao_configurado:'Google OAuth não configurado no servidor.',
+      token_falhou:          'Falha ao obter token do Google. Tente novamente.',
+      state_invalido:        'Sessão expirada. Tente novamente.',
+    };
+    const el = document.getElementById('erro-login');
+    el.textContent = erros[_oauthErro] || 'Erro no login com Google.';
+    el.style.display = 'block';
+    history.replaceState({}, '', '/login');
+  }
+
+  // ── Verificação de código ────────────────────────────────
+  let _emailVerificando = '';
+
+  // ── Verificação de código (MOCK) ────────────────────────
+  async function verificarCodigo() {
+    const codigo = document.getElementById('codigo-verificacao').value.trim();
+    const btn    = document.getElementById('btn-verificar');
+    const erro   = document.getElementById('erro-verificacao');
+    erro.style.display = 'none';
+    if (codigo.length !== 6) { erro.textContent = 'O código deve ter 6 dígitos'; erro.style.display='block'; return; }
+    btn.disabled = true;
+    await new Promise(r => setTimeout(r, 700));
+    entrarNoSistema(_emailVerificando.split('@')[0]);
+  }
+
+  async function reenviarCodigo() {
+    const el = document.getElementById('erro-verificacao');
+    el.style.cssText = 'display:block;background:#f0fdf4;border-color:#86efac;color:#16a34a';
+    el.textContent = '✅ Código reenviado! (modo demo)';
+    setTimeout(() => { el.style.display = 'none'; el.removeAttribute('style'); }, 3000);
+  }
+
+  // ── Recuperação de senha (MOCK) ──────────────────────────
+  async function enviarRecuperacao() {
+    const email = document.getElementById('recuperar-email').value.trim();
+    const btn   = document.getElementById('btn-enviar-recuperacao');
+    const erro  = document.getElementById('erro-recuperar');
+    erro.style.display = 'none';
+    if (!email) { erro.textContent = 'Informe o e-mail'; erro.style.display='block'; return; }
+    btn.disabled = true;
+    btn.innerHTML = `<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>`;
+    await new Promise(r => setTimeout(r, 700));
+    document.getElementById('recuperar-step1').style.display = 'none';
+      document.getElementById('recuperar-step2').style.display = '';
+      const s = document.getElementById('sucesso-recuperar');
+      s.textContent = `Código enviado para ${email}. Verifique seu e-mail.`;
+      s.style.display = 'block';
+    } catch(e) {
+      erro.textContent = 'Erro ao enviar código. Tente novamente.';
+      erro.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Enviar código';
+    }
+  }
+
+  async function redefinirSenha() {
+    const email     = document.getElementById('recuperar-email').value.trim();
+    const codigo    = document.getElementById('recuperar-codigo').value.trim();
+    const novaSenha = document.getElementById('recuperar-nova-senha').value;
+    const btn       = document.getElementById('btn-redefinir');
+    const erro      = document.getElementById('erro-recuperar');
+    erro.style.display = 'none';
+
+    if (!codigo || !novaSenha) {
+      erro.textContent = 'Preencha o código e a nova senha';
+      erro.style.display = 'block'; return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>`;
+    await new Promise(r => setTimeout(r, 700));
+    const s = document.getElementById('sucesso-recuperar');
+    s.textContent = '✅ Senha redefinida! (modo demo) Redirecionando...';
+    s.style.display = 'block';
+    setTimeout(() => mostrarAba('login'), 2000);
+    btn.disabled = false;
+    btn.textContent = 'Redefinir senha';
+  }
+
+</script>
+
+<!-- Service Worker (PWA) -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        console.log('[PWA] Service Worker registrado:', reg.scope);
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[PWA] Nova versao disponivel!');
+            }
+          });
+        });
+      } catch (err) {
+        console.warn('[PWA] Falha ao registrar SW:', err);
+      }
+    });
+  }
+</script>
+</body>
+</html>

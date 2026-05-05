@@ -1,0 +1,52 @@
+// ============================================================
+// MIDDLEWARE: Proteção de Rotas — MicroERP
+// Roda no Edge Runtime (antes do React renderizar).
+// Lê o cookie sf_token e decide:
+//   - Sem token em rota privada → redireciona para /login
+//   - Com token em rota pública → redireciona para /dashboard
+// ============================================================
+
+import { NextRequest, NextResponse } from 'next/server';
+
+// Cookie definido pelo backend FastAPI no login
+const AUTH_COOKIE = 'sf_token';
+
+// Rotas que NÃO precisam de autenticação
+const PUBLIC_PATHS = ['/login'];
+
+export function middleware(request: NextRequest) {
+  // Em modo mock (desenvolvimento sem backend), desabilita proteção de rotas
+  if (process.env.NEXT_PUBLIC_USE_MOCK === 'true') {
+    return NextResponse.next();
+  }
+
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get(AUTH_COOKIE)?.value;
+
+  const isPublicPath = PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
+
+  // ── Usuário autenticado tentando acessar /login → dashboard
+  if (token && isPublicPath) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // ── Usuário sem sessão tentando acessar área privada → login
+  if (!token && !isPublicPath) {
+    const loginUrl = new URL('/login', request.url);
+    // Preserva a URL de destino para redirecionar após o login
+    if (pathname !== '/') {
+      loginUrl.searchParams.set('next', pathname);
+    }
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return NextResponse.next();
+}
+
+// Quais caminhos o middleware intercepta
+// Exclui: assets estáticos, API routes internas, favicon
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.ico|api/).*)',
+  ],
+};

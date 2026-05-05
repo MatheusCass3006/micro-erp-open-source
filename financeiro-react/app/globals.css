@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* ── Tailwind v4: dark mode via [data-theme=dark] em qualquer ancestral ── */
+@custom-variant dark ([data-theme=dark] &);
+
+/* ── Variáveis semânticas de cor ── */
+:root {
+  --bg-base:    #f9fafb;
+  --bg-surface: #ffffff;
+  --bg-subtle:  #f3f4f6;
+  --border-col: #e5e7eb;
+  --text-main:  #111827;
+  --text-muted: #6b7280;
+  --text-sub:   #9ca3af;
+}
+
+[data-theme="dark"] {
+  --bg-base:    #0f0f11;
+  --bg-surface: #1a1a1f;
+  --bg-subtle:  #27272d;
+  --border-col: #2a2a32;
+  --text-main:  #f4f4f5;
+  --text-muted: #a1a1aa;
+  --text-sub:   #71717a;
+}
+
+/* ── Body base ── */
+body {
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  font-family: var(--font-inter, system-ui, sans-serif);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ── Transição suave em todos os elementos para não piscar ── */
+*, *::before, *::after {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* ── Inputs e selects globais — dark mode garantido ── */
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: #111118 !important;
+  border-color: var(--border-col) !important;
+  color: var(--text-main) !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-sub) !important;
+}
+
+/* Opções do select */
+[data-theme="dark"] option {
+  background-color: #1a1a1f;
+  color: var(--text-main);
+}
+
+/* ── Scrollbar ── */
+[data-theme="dark"] ::-webkit-scrollbar { width: 6px; }
+[data-theme="dark"] ::-webkit-scrollbar-track { background: #1a1a1f; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #3a3a44; border-radius: 3px; }
