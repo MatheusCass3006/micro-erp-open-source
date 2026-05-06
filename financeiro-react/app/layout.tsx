@@ -14,12 +14,6 @@ const inter = { variable: '--font-inter', className: 'font-sans' };
 export const metadata: Metadata = {
   title: 'MicroERP — Gestão Financeira',
   description: 'Sistema ERP financeiro profissional',
-  manifest: '/manifest.webmanifest',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'MicroERP',
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,8 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
         />
-        {/* PWA: manifest e ícone Apple */}
-        <link rel="manifest" href="/manifest.webmanifest" />
+        {/* PWA: ícone Apple */}
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
