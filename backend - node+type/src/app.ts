@@ -46,7 +46,7 @@ app.use(cors({
 // ── Rate limiting: autenticação (proteção a brute force) ────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // janela de 15 minutos
-  max: 20,                   // máximo 20 tentativas por IP por janela
+  max: 100,                  // máximo 100 tentativas por IP por janela (mais amigável para testes)
   message: { success: false, message: "Muitas tentativas. Aguarde 15 minutos." },
   standardHeaders: true,
   legacyHeaders: false,
