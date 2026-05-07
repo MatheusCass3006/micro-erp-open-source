@@ -29,6 +29,11 @@ export const AppDataSource = new DataSource(
         ssl: { rejectUnauthorized: false }, // Necessário para Supabase/Neon
         synchronize: false, // Migrations devem ser usadas em prod
         logging: false,
+        extra: {
+          max: 20, // Máximo de conexões simultâneas
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 2000,
+        },
         entities: [
           Empresa,
           Usuario,

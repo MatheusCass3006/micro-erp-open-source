@@ -14,11 +14,16 @@ export function errorMiddleware(
     });
   }
 
-  console.error("Erro não tratado:", err);
+  console.error(`[ERROR] ${request.method} ${request.url} - User: ${request.usuario?.usuario_id || 'Anon'}`);
+  console.error(`  - Message: ${err.message}`);
+  if (err.stack) console.error(`  - Stack: ${err.stack.split('\n')[1]}`); // Loga apenas a primeira linha da stack para não poluir
+  if (request.body && Object.keys(request.body).length > 0) {
+    console.error(`  - Body: ${JSON.stringify(request.body)}`);
+  }
 
   return response.status(500).json({
     success: false,
-    message: "Erro interno do servidor",
+    message: "Erro interno do servidor (Monitorado)",
   });
 }
 

@@ -46,8 +46,8 @@ app.use(cors({
 // ── Rate limiting: autenticação (proteção a brute force) ────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // janela de 15 minutos
-  max: 100,                  // máximo 100 tentativas por IP por janela (mais amigável para testes)
-  message: { success: false, message: "Muitas tentativas. Aguarde 15 minutos." },
+  max: 50,                   // mais restritivo para proteção
+  message: { success: false, message: "Muitas tentativas de login. Aguarde 15 minutos." },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -55,9 +55,25 @@ const authLimiter = rateLimit({
 // ── Rate limiting geral (todas as rotas de API) ──────────────────────
 const globalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minuto
-  max: 300,            // 300 req/min por IP
+  max: 1000,           // Permitir até 1000 requisições por minuto (Stress Test Ready)
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+// ── Válvula de Alívio: Monitor de Carga ───────────────────────────
+let activeRequests = 0;
+const MAX_CONCURRENT_REQUESTS = 500; // Limite de segurança
+
+app.use((req, res, next) => {
+  if (activeRequests >= MAX_CONCURRENT_REQUESTS) {
+    return res.status(503).json({
+      success: false,
+      message: "Servidor sob alta carga. Por favor, tente em instantes (Válvula de Alívio)."
+    });
+  }
+  activeRequests++;
+  res.on("finish", () => activeRequests--);
+  next();
 });
 
 app.use(express.json({ limit: "5mb" })); // limite de payload
