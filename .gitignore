@@ -1,4 +1,4 @@
-﻿# Node & Next
+# Node & Next
 **/node_modules/
 .next/
 .next_old_kept/
@@ -43,3 +43,9 @@ installer_output/
 
 # Outros segredos
 .openclaude-profile.json
+
+# Scripts & Installers (Raiz)
+/*.bat
+/*.iss
+/*.vbs
+
