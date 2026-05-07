@@ -44,4 +44,7 @@ export class Saida {
   @ManyToOne(() => CategoriaSaida, { nullable: true })
   @JoinColumn({ name: "categoria_id" })
   categoria!: CategoriaSaida;
+
+  @Column({ name: "tenant_id", type: "varchar", length: 100, nullable: true })
+  tenantId!: string;
 }

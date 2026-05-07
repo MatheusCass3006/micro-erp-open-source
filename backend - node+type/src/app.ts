@@ -63,6 +63,9 @@ const globalLimiter = rateLimit({
 app.use(express.json({ limit: "5mb" })); // limite de payload
 app.use(cookieParser());
 
+import { tenantMiddleware } from "./middlewares/tenantMiddleware";
+app.use(tenantMiddleware);
+
 app.use(session({
   secret: process.env.JWT_SECRET || (() => {
     throw new Error("JWT_SECRET não configurado no ambiente!");
@@ -97,15 +100,17 @@ app.use("/api/feedback", feedbackRouter);
 
 app.use(errorMiddleware);
 
-AppDataSource.initialize()
-  .then(() => {
-    console.log("Banco de dados conectado!");
-    app.listen(PORT, () => {
-      console.log(`Servidor rodando na porta ${PORT}`);
+if (process.env.NODE_ENV !== "test") {
+  AppDataSource.initialize()
+    .then(() => {
+      console.log("Banco de dados conectado!");
+      app.listen(PORT, () => {
+        console.log(`Servidor rodando na porta ${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.error("Erro ao conectar banco:", error);
     });
-  })
-  .catch((error) => {
-    console.error("Erro ao conectar banco:", error);
-  });
+}
 
 export default app;

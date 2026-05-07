@@ -33,4 +33,7 @@ export class ItemNota {
   @ManyToOne(() => Nota)
   @JoinColumn({ name: "nota_id" })
   nota!: Nota;
+
+  @Column({ name: "tenant_id", type: "varchar", length: 100, nullable: true })
+  tenantId!: string;
 }

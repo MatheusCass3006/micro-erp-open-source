@@ -50,4 +50,7 @@ export class Entrada {
   @ManyToOne(() => Maquininha, { nullable: true })
   @JoinColumn({ name: "maquininha_id" })
   maquininha!: Maquininha;
+
+  @Column({ name: "tenant_id", type: "varchar", length: 100, nullable: true })
+  tenantId!: string;
 }

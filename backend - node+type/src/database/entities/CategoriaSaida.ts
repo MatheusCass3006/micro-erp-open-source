@@ -24,4 +24,7 @@ export class CategoriaSaida {
   @ManyToOne(() => Empresa)
   @JoinColumn({ name: "empresa_id" })
   empresa!: Empresa;
+
+  @Column({ name: "tenant_id", type: "varchar", length: 100, nullable: true })
+  tenantId!: string;
 }

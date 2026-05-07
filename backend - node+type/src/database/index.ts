@@ -18,6 +18,8 @@ config();
 
 const isProd = process.env.NODE_ENV === "production";
 
+import { TenantSubscriber } from "./subscribers/TenantSubscriber";
+
 export const AppDataSource = new DataSource({
   type: "better-sqlite3",
   database: process.env.DB_FILE || "microerp.db",
@@ -38,5 +40,6 @@ export const AppDataSource = new DataSource({
     Configuracao,
     Feedback,
   ],
+  subscribers: [TenantSubscriber],
   migrations: [__dirname + "/migrations/*.ts"],
 });
