@@ -17,29 +17,56 @@ import { Feedback } from "./entities/Feedback";
 config();
 
 const isProd = process.env.NODE_ENV === "production";
+const dbUrl = process.env.DATABASE_URL;
 
 import { TenantSubscriber } from "./subscribers/TenantSubscriber";
 
-export const AppDataSource = new DataSource({
-  type: "better-sqlite3",
-  database: process.env.DB_FILE || "microerp.db",
-  synchronize: !isProd,
-  logging: process.env.NODE_ENV === "development",
-  entities: [
-    Empresa,
-    Usuario,
-    UsuarioEmpresa,
-    Sessao,
-    Maquininha,
-    Entrada,
-    CategoriaSaida,
-    Saida,
-    Boleto,
-    Nota,
-    ItemNota,
-    Configuracao,
-    Feedback,
-  ],
-  subscribers: [TenantSubscriber],
-  migrations: [__dirname + "/migrations/*.ts"],
-});
+export const AppDataSource = new DataSource(
+  dbUrl
+    ? {
+        type: "postgres",
+        url: dbUrl,
+        ssl: { rejectUnauthorized: false }, // Necessário para Supabase/Neon
+        synchronize: false, // Migrations devem ser usadas em prod
+        logging: false,
+        entities: [
+          Empresa,
+          Usuario,
+          UsuarioEmpresa,
+          Sessao,
+          Maquininha,
+          Entrada,
+          CategoriaSaida,
+          Saida,
+          Boleto,
+          Nota,
+          ItemNota,
+          Configuracao,
+          Feedback,
+        ],
+        subscribers: [TenantSubscriber],
+      }
+    : {
+        type: "better-sqlite3",
+        database: process.env.DB_FILE || "microerp.db",
+        synchronize: !isProd,
+        logging: process.env.NODE_ENV === "development",
+        entities: [
+          Empresa,
+          Usuario,
+          UsuarioEmpresa,
+          Sessao,
+          Maquininha,
+          Entrada,
+          CategoriaSaida,
+          Saida,
+          Boleto,
+          Nota,
+          ItemNota,
+          Configuracao,
+          Feedback,
+        ],
+        subscribers: [TenantSubscriber],
+        migrations: [__dirname + "/migrations/*.ts"],
+      }
+);

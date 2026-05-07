@@ -98,18 +98,37 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api", configRouter);
 app.use("/api/feedback", feedbackRouter);
 
+// ── Inicialização do Banco ──────────────────────────────────────────
+const connectDB = async () => {
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+    console.log("Banco de dados conectado!");
+  }
+};
+
+// Middleware para garantir conexão (essencial para Vercel Serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Erro na conexão serverless:", error);
+    res.status(500).json({ error: "Erro na conexão com o banco de dados" });
+  }
+});
+
 app.use(errorMiddleware);
 
-if (process.env.NODE_ENV !== "test") {
-  AppDataSource.initialize()
+// Inicia servidor localmente (não roda no Vercel, pois o Vercel usa o export app)
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
+  connectDB()
     .then(() => {
-      console.log("Banco de dados conectado!");
       app.listen(PORT, () => {
         console.log(`Servidor rodando na porta ${PORT}`);
       });
     })
     .catch((error) => {
-      console.error("Erro ao conectar banco:", error);
+      console.error("Erro ao iniciar servidor local:", error);
     });
 }
 
