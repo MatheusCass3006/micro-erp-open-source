@@ -16,8 +16,12 @@ import { Feedback } from "./entities/Feedback";
 
 config();
 
-const isProd = process.env.NODE_ENV === "production";
+const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
 const dbUrl = process.env.DATABASE_URL;
+
+if (isProd && !dbUrl) {
+  throw new Error("DATABASE_URL não configurada no ambiente de produção/Vercel!");
+}
 
 import { TenantSubscriber } from "./subscribers/TenantSubscriber";
 
@@ -27,7 +31,7 @@ export const AppDataSource = new DataSource(
         type: "postgres",
         url: dbUrl,
         ssl: { rejectUnauthorized: false }, // Necessário para Supabase/Neon
-        synchronize: false, // Migrations devem ser usadas em prod
+        synchronize: true, // Habilitado temporariamente para criar tabelas no Supabase
         logging: false,
         extra: {
           max: 20, // Máximo de conexões simultâneas

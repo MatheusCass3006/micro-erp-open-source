@@ -16,17 +16,16 @@ interface UseEntradasOptions {
 export function useEntradas(options: UseEntradasOptions = {}) {
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetch = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
+    setIsLoading(true);
     try {
       const data = await getEntradas(options);
       const arr = Array.isArray(data) ? data : ((data as unknown as { entradas?: unknown[] })?.entradas ?? (data as unknown as { items?: unknown[] })?.items ?? []);
       setEntradas(arr as Entrada[]);
     } catch {
-      setError('Erro ao carregar entradas');
+      // Erro logado ou tratado silenciosamente (página usa toast)
     } finally {
       setIsLoading(false);
     }
@@ -50,5 +49,5 @@ export function useEntradas(options: UseEntradasOptions = {}) {
     setEntradas(prev => prev.filter(e => e.id !== id));
   }
 
-  return { entradas, isLoading, error, criar, atualizar, excluir, refetch: fetch };
+  return { entradas, isLoading, criar, atualizar, excluir, refetch: fetch };
 }

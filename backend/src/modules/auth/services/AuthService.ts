@@ -252,27 +252,4 @@ export class AuthService {
     await this.sessaoRepo.delete({ usuarioId });
   }
 
-  /** Conta sessões ativas de um usuário (para auditoria) */
-  async contarSessoes(usuarioId: number): Promise<number> {
-    return this.sessaoRepo.count({ where: { usuarioId } });
-  }
-
-  /** Remove sessões expiradas do banco (chamar periodicamente) */
-  async limparSessoesExpiradas(): Promise<void> {
-    const agora = new Date();
-    await this.sessaoRepo
-      .createQueryBuilder()
-      .delete()
-      .where("expires_em < :agora", { agora })
-      .execute();
-  }
-
-  // ── Utilitários (mantidos para compatibilidade) ───────────────
-  hashSenha(senha: string): string {
-    return bcrypt.hashSync(senha, 12);
-  }
-
-  verificarSenha(senha: string, hash: string): boolean {
-    return bcrypt.compareSync(senha, hash);
-  }
 }

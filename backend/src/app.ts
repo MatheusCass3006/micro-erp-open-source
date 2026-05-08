@@ -116,9 +116,14 @@ app.use("/api/feedback", feedbackRouter);
 
 // ── Inicialização do Banco ──────────────────────────────────────────
 const connectDB = async () => {
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
-    console.log("Banco de dados conectado!");
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log("✅ Banco de dados conectado!");
+    }
+  } catch (error) {
+    console.error("❌ Falha crítica na conexão com o banco:", error);
+    throw error;
   }
 };
 
@@ -136,15 +141,15 @@ app.use(async (req, res, next) => {
 app.use(errorMiddleware);
 
 // Inicia servidor localmente (não roda no Vercel, pois o Vercel usa o export app)
-if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL && !process.env.NOW_REGION) {
   connectDB()
     .then(() => {
       app.listen(PORT, () => {
-        console.log(`Servidor rodando na porta ${PORT}`);
+        console.log(`🚀 Servidor rodando localmente na porta ${PORT}`);
       });
     })
     .catch((error) => {
-      console.error("Erro ao iniciar servidor local:", error);
+      console.error("❌ Erro ao iniciar servidor local:", error);
     });
 }
 

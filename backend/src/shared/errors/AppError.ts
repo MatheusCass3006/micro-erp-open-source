@@ -17,12 +17,6 @@ export class NotFoundError extends AppError {
   }
 }
 
-export class UnauthorizedError extends AppError {
-  constructor(message: string = "Não autenticado") {
-    super(message, 401);
-  }
-}
-
 export class ForbiddenError extends AppError {
   constructor(message: string = "Acesso negado") {
     super(message, 403);

@@ -3,7 +3,6 @@ import { Entrada } from "../../../database/entities/Entrada";
 import { Saida } from "../../../database/entities/Saida";
 import { Boleto } from "../../../database/entities/Boleto";
 import { Nota } from "../../../database/entities/Nota";
-import { Between, MoreThanOrEqual, LessThanOrEqual } from "typeorm";
 
 export class DashboardService {
   async resumoGeral(empresaId: number, mes?: number, ano?: number) {
