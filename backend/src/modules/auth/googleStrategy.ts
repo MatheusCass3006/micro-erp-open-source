@@ -65,7 +65,28 @@ if (!usuario) {
             }
           }
 
-          return done(null, { id: usuario!.id, nome: usuario!.nome, email: usuario!.email });
+          const vinculoRepo = AppDataSource.getRepository("UsuarioEmpresa") as any;
+          const vinculo = await vinculoRepo.findOne({
+            where: { usuarioId: usuario.id, ativa: true },
+          });
+
+          if (!vinculo) {
+             // Caso raro: usuário existe mas não tem empresa vinculada
+             return done(new Error("Usuário sem empresa vinculada"));
+          }
+
+          const empresa = await empresaRepo.findOne({ where: { id: vinculo.empresaId } });
+          if (!empresa) return done(new Error("Empresa não encontrada"));
+
+          return done(null, {
+            id: usuario.id,
+            nome: usuario.nome,
+            email: usuario.email,
+            empresaId: empresa.id,
+            empresaNome: empresa.nome,
+            empresaSlug: empresa.slug,
+            role: vinculo.role,
+          });
         } catch (error) {
           return done(error as Error);
         }

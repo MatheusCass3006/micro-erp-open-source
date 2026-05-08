@@ -275,7 +275,10 @@ function LoginContent() {
 
           <BtnPrimary loading={loading} label="Entrar" loadingLabel="Entrando..." />
           <Divider />
-          <BtnGoogle onClick={() => window.location.href = 'https://micro-erp-production.digital/api/auth/google'} />
+          <BtnGoogle onClick={() => {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            window.location.href = `${apiUrl}/api/auth/google`;
+          }} />
         </form>
       ) : (
         <form onSubmit={handleCadastro} className="space-y-4">

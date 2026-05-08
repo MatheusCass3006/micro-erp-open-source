@@ -2,6 +2,7 @@ import { Router }         from "express";
 import { AuthController }  from "./controllers/AuthController";
 import { requireAuth }     from "../../middlewares/authMiddleware";
 import passport          from "passport";
+import { AuthService } from "./services/AuthService";
 import { setupGoogleOAuth } from "./googleStrategy";
 
 const authRouter    = Router();
@@ -18,7 +19,21 @@ authRouter.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/?erro=google" }),
   (req, res) => {
-    res.redirect(process.env.CORS_ORIGIN || "http://localhost:3000");
+    const user = req.user as any;
+    if (!user) return res.redirect(`${process.env.CORS_ORIGIN}/login?erro=google`);
+
+    const authService = new AuthService();
+    const token = authService.gerarAccessToken(
+      user.id,
+      user.empresaId,
+      user.empresaNome,
+      user.empresaSlug,
+      user.role,
+      user.nome,
+      user.email
+    );
+
+    res.redirect(`${process.env.CORS_ORIGIN}/login?google_token=${token}`);
   }
 );
 

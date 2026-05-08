@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import passport from "passport";
-import session from "express-session";
+import cookieSession from "cookie-session";
 import "reflect-metadata";
 import { AppDataSource } from "./database";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
@@ -82,17 +82,13 @@ app.use(cookieParser());
 import { tenantMiddleware } from "./middlewares/tenantMiddleware";
 app.use(tenantMiddleware);
 
-app.use(session({
-  secret: process.env.JWT_SECRET || (() => {
-    throw new Error("JWT_SECRET não configurado no ambiente!");
-  })(),
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: isProd,
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-  },
+app.use(cookieSession({
+  name: "session",
+  keys: [process.env.JWT_SECRET || "microerp-secret"],
+  maxAge: 24 * 60 * 60 * 1000, // 24 horas
+  secure: isProd,
+  httpOnly: true,
+  sameSite: isProd ? "none" : "lax",
 }));
 
 app.use(passport.initialize());
