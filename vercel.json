@@ -1,10 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "cd financeiro-react && npm ci && npm run build",
-  "outputDirectory": "financeiro-react/.next",
-  "installCommand": "cd financeiro-react && npm ci",
-  "framework": "nextjs",
-  "projectSettings": {
-    "rootDirectory": "financeiro-react"
-  }
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs"
 }
