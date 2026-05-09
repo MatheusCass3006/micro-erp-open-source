@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "npm install --prefix financeiro-react && npm run build --prefix financeiro-react",
+    "build": "bash build.sh",
     "dev": "npm run dev --prefix financeiro-react"
   }
 }
