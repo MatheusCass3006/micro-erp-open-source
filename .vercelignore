@@ -1,0 +1,7 @@
+backend
+installer
+microerp-pkg
+microerp-local
+node_modules
+.git
+README.md

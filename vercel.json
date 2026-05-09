@@ -3,7 +3,8 @@
   "buildCommand": "cd financeiro-react && npm ci && npm run build",
   "outputDirectory": "financeiro-react/.next",
   "installCommand": "cd financeiro-react && npm ci",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@api_url"
+  "framework": "nextjs",
+  "projectSettings": {
+    "rootDirectory": "financeiro-react"
   }
 }
