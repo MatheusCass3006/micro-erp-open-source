@@ -1,15 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "cd financeiro-react && npm install && npm run build",
+  "buildCommand": "cd financeiro-react && npm ci && npm run build",
   "outputDirectory": "financeiro-react/.next",
-  "installCommand": "npm install",
+  "installCommand": "cd financeiro-react && npm ci",
   "env": {
     "NEXT_PUBLIC_API_URL": "@api_url"
-  },
-  "rewrites": [
-    {
-      "source": "/:path*",
-      "destination": "/index.html"
-    }
-  ]
+  }
 }
