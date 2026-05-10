@@ -1,9 +1,0 @@
-{
-  "name": "microerp-monorepo",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "bash build.sh",
-    "dev": "npm run dev --prefix financeiro-react"
-  }
-}
