@@ -96,20 +96,6 @@ app.use(passport.session());
 
 app.use("/api", globalLimiter);  // rate limit em toda a API
 
-app.get("/api/health", (req: Request, res: Response) => {
-  res.json({ status: "ok" });
-});
-
-app.use("/api/auth", authLimiter, authRouter); // rate limit extra em auth
-app.use("/api/usuarios", usuarioRouter);
-app.use("/api/entradas", entradaRouter);
-app.use("/api/saidas", saidaRouter);
-app.use("/api/boletos", boletoRouter);
-app.use("/api/notas", notaRouter);
-app.use("/api/dashboard", dashboardRouter);
-app.use("/api", configRouter);
-app.use("/api/feedback", feedbackRouter);
-
 // ── Inicialização do Banco ──────────────────────────────────────────
 const connectDB = async () => {
   try {
@@ -124,6 +110,7 @@ const connectDB = async () => {
 };
 
 // Middleware para garantir conexão (essencial para Vercel Serverless)
+// DEVE ESTAR AQUI ANTES DAS ROTAS!
 app.use(async (req, res, next) => {
   try {
     await connectDB();
@@ -134,7 +121,36 @@ app.use(async (req, res, next) => {
   }
 });
 
+app.get("/api/health", (req: Request, res: Response) => {
+  res.json({ status: "ok" });
+});
+
+app.use("/api/auth", authLimiter, authRouter); // rate limit extra em auth
+app.use("/api/usuarios", usuarioRouter);
+app.use("/api/entradas", entradaRouter);
+app.use("/api/saidas", saidaRouter);
+app.use("/api/boletos", boletoRouter);
+app.use("/api/notas", notaRouter);
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api", configRouter);
+app.use("/api/feedback", feedbackRouter);
+
 app.use(errorMiddleware);
+
+// Fallback 404 handler para debug no Vercel
+app.use((req: Request, res: Response) => {
+  console.log(`[404] Não encontrado: ${req.method} ${req.originalUrl} (url: ${req.url})`);
+  res.status(404).json({
+    success: false,
+    message: "Rota não encontrada",
+    debug: {
+      method: req.method,
+      url: req.url,
+      originalUrl: req.originalUrl,
+      path: req.path
+    }
+  });
+});
 
 // Inicia servidor localmente (não roda no Vercel, pois o Vercel usa o export app)
 if (process.env.NODE_ENV !== "test" && !process.env.VERCEL && !process.env.NOW_REGION) {
