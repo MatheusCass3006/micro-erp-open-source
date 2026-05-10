@@ -96,7 +96,7 @@ app.use(passport.session());
 
 app.use("/api", globalLimiter);  // rate limit em toda a API
 
-app.get("/health", (req: Request, res: Response) => {
+app.get("/api/health", (req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 
