@@ -276,8 +276,7 @@ function LoginContent() {
           <BtnPrimary loading={loading} label="Entrar" loadingLabel="Entrando..." />
           <Divider />
           <BtnGoogle onClick={() => {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            window.location.href = `${apiUrl}/api/auth/google`;
+            window.location.href = "/api/auth/google";
           }} />
         </form>
       ) : (
