@@ -20,7 +20,34 @@ import feedbackRouter from "./modules/feedback/feedbackRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const isProd = process.env.NODE_ENV === "production";
+const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
+
+// ── Trust Proxy: Necessário para Vercel/CloudFront/Lambda ─────────────
+app.set("trust proxy", true);
+
+// ── Inicialização do Banco (MUITO IMPORTANTE: DEVE SER O PRIMEIRO!) ──
+const connectDB = async () => {
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log("✅ Banco de dados conectado!");
+    }
+  } catch (error) {
+    console.error("❌ Falha crítica na conexão com o banco:", error);
+    throw error;
+  }
+};
+
+// Middleware para garantir conexão (essencial para Vercel Serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Erro na conexão serverless:", error);
+    res.status(500).json({ error: "Erro na conexão com o banco de dados" });
+  }
+});
 
 // ── Segurança: headers HTTP (CSP, X-Frame-Options, HSTS, etc.) ──────
 app.use(helmet({
@@ -29,7 +56,7 @@ app.use(helmet({
 }));
 
 // ── CORS: apenas origens autorizadas ────────────────────────────────
-const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3000")
+const allowedOrigins = (process.env.CORS_ORIGIN || "https://micro-erp-production.digital,https://micro-erp-open-source.vercel.app,https://financeiro-react-teal.vercel.app,http://localhost:3000")
   .split(",")
   .map(o => o.trim());
 
@@ -37,16 +64,18 @@ app.use(cors({
   origin: (origin, callback) => {
     // Permite requests sem origin (Postman, mobile apps, etc. em dev)
     if (!origin && !isProd) return callback(null, true);
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) return callback(null, true);
     callback(new Error(`Origem não permitida: ${origin}`));
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept", "X-Requested-With"],
 }));
 
 // ── Rate limiting: autenticação (proteção a brute force) ────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // janela de 15 minutos
-  max: 50,                   // mais restritivo para proteção
+  max: 1000,                  // Aumentado para 1000 em dev/debug
   message: { success: false, message: "Muitas tentativas de login. Aguarde 15 minutos." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -82,50 +111,16 @@ app.use(cookieParser());
 import { tenantMiddleware } from "./middlewares/tenantMiddleware";
 app.use(tenantMiddleware);
 
-app.use(cookieSession({
-  name: "session",
-  keys: [process.env.JWT_SECRET || "microerp-secret"],
-  maxAge: 24 * 60 * 60 * 1000, // 24 horas
-  secure: isProd,
-  httpOnly: true,
-  sameSite: isProd ? "none" : "lax",
-}));
-
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use("/api", globalLimiter);  // rate limit em toda a API
 
-// ── Inicialização do Banco ──────────────────────────────────────────
-const connectDB = async () => {
-  try {
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-      console.log("✅ Banco de dados conectado!");
-    }
-  } catch (error) {
-    console.error("❌ Falha crítica na conexão com o banco:", error);
-    throw error;
-  }
-};
-
-// Middleware para garantir conexão (essencial para Vercel Serverless)
-// DEVE ESTAR AQUI ANTES DAS ROTAS!
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (error) {
-    console.error("Erro na conexão serverless:", error);
-    res.status(500).json({ error: "Erro na conexão com o banco de dados" });
-  }
-});
 
 app.get("/api/health", (req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 
-app.use("/api/auth", authLimiter, authRouter); // rate limit extra em auth
+app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/usuarios", usuarioRouter);
 app.use("/api/entradas", entradaRouter);
 app.use("/api/saidas", saidaRouter);

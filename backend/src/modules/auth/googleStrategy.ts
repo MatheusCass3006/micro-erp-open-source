@@ -7,7 +7,7 @@ import { Empresa } from "../../database/entities/Empresa";
 export function setupGoogleOAuth() {
   const googleClientID = process.env.GOOGLE_CLIENT_ID;
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const callbackURL = process.env.GOOGLE_CALLBACK_URL || "http://localhost:3001/api/auth/google/callback";
+  const callbackURL = process.env.GOOGLE_CALLBACK_URL || process.env.GOOGLE_REDIRECT_URI || "http://localhost:3001/api/auth/google/callback";
 
   if (!googleClientID || !googleClientSecret) {
     console.log("⚠️ Google OAuth não configurado");
@@ -29,6 +29,8 @@ export function setupGoogleOAuth() {
           let usuario = await usuarioRepo.findOne({
             where: { googleId: profile.id },
           });
+
+          const vinculoRepo = AppDataSource.getRepository("UsuarioEmpresa") as any;
 
 if (!usuario) {
             const userEmail = profile.emails?.[0]?.value;
@@ -62,17 +64,43 @@ if (!usuario) {
                 senhaHash: null,
               });
               await usuarioRepo.save(usuario);
+
+              // ✅ CORREÇÃO: criar o vínculo UsuarioEmpresa
+              await vinculoRepo.save(vinculoRepo.create({
+                usuarioId: usuario.id,
+                empresaId: novaEmpresa.id,
+                role: "admin",
+                ativa: true,
+              }));
             }
           }
 
-          const vinculoRepo = AppDataSource.getRepository("UsuarioEmpresa") as any;
           const vinculo = await vinculoRepo.findOne({
             where: { usuarioId: usuario.id, ativa: true },
           });
 
           if (!vinculo) {
-             // Caso raro: usuário existe mas não tem empresa vinculada
-             return done(new Error("Usuário sem empresa vinculada"));
+            // Usuário existe mas não tem empresa — cria uma automaticamente
+            const nomeEmpresa = usuario.nome?.split(" ")[0] || "Minha Empresa";
+            const slug = nomeEmpresa.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
+            const novaEmpresa = empresaRepo.create({ nome: nomeEmpresa, slug });
+            await empresaRepo.save(novaEmpresa);
+            await vinculoRepo.save(vinculoRepo.create({
+              usuarioId: usuario.id,
+              empresaId: novaEmpresa.id,
+              role: "admin",
+              ativa: true,
+            }));
+            const empresa = novaEmpresa;
+            return done(null, {
+              id: usuario.id,
+              nome: usuario.nome,
+              email: usuario.email,
+              empresaId: empresa.id,
+              empresaNome: empresa.nome,
+              empresaSlug: empresa.slug,
+              role: "admin",
+            });
           }
 
           const empresa = await empresaRepo.findOne({ where: { id: vinculo.empresaId } });

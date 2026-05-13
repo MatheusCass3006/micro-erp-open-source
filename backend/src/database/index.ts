@@ -31,7 +31,7 @@ export const AppDataSource = new DataSource(
         type: "postgres",
         url: dbUrl,
         ssl: { rejectUnauthorized: false }, // Necessário para Supabase/Neon
-        synchronize: true, // Habilitado temporariamente para criar tabelas no Supabase
+        synchronize: true, // Habilitado para criar/atualizar tabelas automaticamente
         logging: false,
         extra: {
           max: 20, // Máximo de conexões simultâneas

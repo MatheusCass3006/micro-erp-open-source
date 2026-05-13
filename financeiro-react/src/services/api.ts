@@ -12,7 +12,7 @@
 // disparam apenas UM refresh — as outras requests aguardam o resultado.
 // ============================================================
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 // ── Callbacks injetados pelo AuthContext ──────────────────────
 // Desacoplam api.ts de AuthContext sem criar dependência circular.

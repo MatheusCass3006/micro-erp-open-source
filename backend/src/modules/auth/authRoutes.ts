@@ -12,15 +12,16 @@ setupGoogleOAuth();
 
 authRouter.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", { scope: ["profile", "email"], session: false })
 );
 
 authRouter.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/?erro=google" }),
+  passport.authenticate("google", { failureRedirect: "/?erro=google", session: false }),
   (req, res) => {
     const user = req.user as any;
-    if (!user) return res.redirect(`${process.env.CORS_ORIGIN}/login?erro=google`);
+    const origin = (process.env.CORS_ORIGIN || "").split(",")[0] || "http://localhost:3000";
+    if (!user) return res.redirect(`${origin}/login?erro=google`);
 
     const authService = new AuthService();
     const token = authService.gerarAccessToken(
@@ -33,7 +34,7 @@ authRouter.get(
       user.email
     );
 
-    res.redirect(`${process.env.CORS_ORIGIN}/login?google_token=${token}`);
+    res.redirect(`${origin}/login?google_token=${token}`);
   }
 );
 

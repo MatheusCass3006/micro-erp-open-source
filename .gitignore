@@ -44,8 +44,10 @@ installer_output/
 # Outros segredos
 .openclaude-profile.json
 
-# Scripts & Installers (Raiz)
-/*.bat
-/*.iss
-/*.vbs
+# Scripts & Installers (Global)
+**/*.bat
+**/*.iss
+**/*.vbs
+**/.serverless/
 
+.vercel

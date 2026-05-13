@@ -83,15 +83,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setAccessToken(token);
       const user = await authService.me(token);
-      if (user) {
-        setUsuario({
-          id: user.id,
-          nome: user.nome,
-          email: user.email,
-          role: user.role,
-          empresa: user.empresa
-        });
-      }
+      if (!user) throw new Error('Não foi possível carregar os dados do usuário. Verifique a conexão com a API.');
+      setUsuario({
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        role: user.role,
+        empresa: user.empresa
+      });
     } catch (err) {
       setAccessToken(null);
       setUsuario(null);

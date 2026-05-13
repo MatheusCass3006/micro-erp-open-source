@@ -27,3 +27,7 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Serverless Framework (contém credenciais)
+.serverless/
+deploy.bat

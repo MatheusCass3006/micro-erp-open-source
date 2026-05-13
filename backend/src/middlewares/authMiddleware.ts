@@ -56,10 +56,11 @@ export function requireAuth() {
 
       const secret = process.env.JWT_SECRET;
       if (!secret) {
-        console.error("[Auth] JWT_SECRET não configurado");
+        console.error("[Auth] JWT_SECRET não configurado. NODE_ENV:", process.env.NODE_ENV);
+        console.error("[Auth] Chaves de ambiente disponíveis:", Object.keys(process.env).filter(k => !k.includes("KEY") && !k.includes("SECRET") && !k.includes("PASSWORD")).join(", "));
         return res.status(500).json({
           success: false,
-          message: "Erro de configuração do servidor",
+          message: "Erro de configuração do servidor (Monitorado)",
         });
       }
 

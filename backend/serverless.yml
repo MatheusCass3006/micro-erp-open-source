@@ -1,0 +1,31 @@
+service: microerp-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: sa-east-1
+  memorySize: 512
+  timeout: 10
+  environment:
+    DATABASE_URL: ${env:DATABASE_URL}
+    JWT_SECRET: ${env:JWT_SECRET}
+    CORS_ORIGIN: ${env:CORS_ORIGIN}
+    GOOGLE_CLIENT_ID: ${env:GOOGLE_CLIENT_ID}
+    GOOGLE_CLIENT_SECRET: ${env:GOOGLE_CLIENT_SECRET}
+    GOOGLE_CALLBACK_URL: ${env:GOOGLE_CALLBACK_URL}
+    NODE_ENV: production
+
+package:
+  patterns:
+    - '!**'
+    - 'dist/**'
+    - 'node_modules/**'
+    - 'package.json'
+    - '!backend/.env'
+    - '!.env'
+
+functions:
+  api:
+    handler: dist/lambda.handler
+    events:
+      - httpApi: '*'
